@@ -53,3 +53,16 @@ dataqu = pd.read_csv('data.csv')
 print(dataqu)
 
 '''
+
+'''
+text = ["aku","kamu","dia"]
+
+
+' '.join([alay_dict_map[word] if word in alay_dict_map else word for wod in text.split(' ')])
+for word in text.split(' '):
+    if word in alay_dict_map:
+        [alay_dict_map[word]]
+    else:
+        word
+        
+'''

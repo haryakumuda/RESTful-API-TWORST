@@ -7,22 +7,13 @@ import re
 import csv
 import json
 import mysql.connector
+import sqlite3
 
-db = mysql.connector.connect(
-            host = 'localhost',
-            user = 'haryauyee',
-            password = 'password',
-            database = 'binargold'
-            )
-
-mycursor = db.cursor(buffered=True)
-
+db = sqlite3.connect('challenge.db')
+db.text_factory = bytes
+mycursor = db.cursor()
 q_kamusalay = "select * from kamusalay"
-q_abusive = "select * from abusive"
-q_datatweet = "select * from datatweet"
-t_kamusalay = pd.read_sql(q_kamusalay, db)
-t_abusive = pd.read_sql(q_abusive, db)
-t_datatweet = pd.read_sql(q_datatweet, db)
+t_kamusalay = pd.read_sql_query(q_kamusalay, db)
 
 def lowercase(text):
     return text.lower()
@@ -38,7 +29,7 @@ def remove_nonaplhanumeric(text):
     text = re.sub('[^0-9a-zA-Z]+', ' ', text)  #tolong dicek kalau tanda tanya dan tanda seru kan penting
     return text
 
-alay_dict_map = dict(zip(t_kamusalay['alay'], t_kamusalay['arti'])) #zip menyatukan value dengan index yang sama
+alay_dict_map = dict(zip(t_kamusalay['alay'], t_kamusalay['cleaned'])) #zip menyatukan value dengan index yang sama
 #alay_dict_items = alay_dict_map.items()
 def normalize_alay(text):
     for word in alay_dict_map:
@@ -58,13 +49,94 @@ def preprocess(text):
     text = normalize_alay(text) # 4
     return text
 
+
+
+
+
+
+
+def process_csv(input_csv):
+
+    try:
+        t_input = pd.read_csv(input_csv, encoding='iso-8859-1')
+    except:
+        print("Trying another Encoding")
+
+    try:
+        t_input = pd.read_csv(input_csv, encoding='utf-8')
+    except:
+        print("CSV File is unreadable")
+
+    try:
+
+        first_column = t_input.iloc[:100, 0] #Nanti kalau launching 100 nya dihilangkan
+        print(first_column)
+
+        for tweet in first_column:
+            tweet_clean = preprocess(tweet)
+            query_tabel = "insert into tweet (tweet_mentah,tweet_clean) values (?, ?)"
+            val = (tweet, tweet_clean)
+            mycursor.execute(query_tabel, val)
+            db.commit()
+            print(tweet)
+    except:
+        print("CSV File is unreadable")
+
+
+
+def process_text(input_text):
+    try: 
+        output_text = preprocess(input_text)
+
+        print(input_text)
+        print(output_text)
+
+        query_text = "insert into tweet (tweet_mentah,tweet_clean) values (?, ?)"
+        val = (input_text, output_text)
+        mycursor.execute(query_text, val)
+        db.commit()
+    except:
+        print("Text is unreadable")
+
+
+#input_csv = "data.csv" #Nanti Input client disini, sementara pake data.csv dulu
+#input_text = "CONTOH Alay Bangsat Kasar User HTTPS://www.Facebook.com Adek hahaha 3x bangsat,,,..,.,.!!!@@@ aww" #Nanti Input text masuk sini, ini sementara
+#process_csv(input_csv)
+#process_text(input_text)
+
+
+
+
+
+
+#yang bawah ga dipake lagi
+
+'''
 print(t_datatweet.head(10))
 t_datatweet['Tweet'] = t_datatweet['Tweet'].apply(preprocess) #untuk apply fungsi preprocess / cleaning data pakai .apply
 print(t_datatweet.head(10))
 #t_datatweet['Tweet'] = kolom
-
+'''
 
 '''
+
+db = mysql.connector.connect(
+            host = 'localhost',
+            user = 'haryauyee',
+            password = 'password',
+            database = 'binargold'
+            )
+
+mycursor = db.cursor(buffered=True)
+
+q_kamusalay = "select * from kamusalay"
+q_abusive = "select * from abusive"
+q_datatweet = "select * from datatweet"
+t_kamusalay = pd.read_sql(q_kamusalay, db)
+t_abusive = pd.read_sql(q_abusive, db)
+t_datatweet = pd.read_sql(q_datatweet, db)
+
+
 input_user = input("Masukan Tweet Anda: ")
 
 output_user = preprocess(input_user)

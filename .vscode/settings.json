@@ -1,0 +1,24 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "askForPassword": true,
+            "driver": "MySQL",
+            "name": "haryauyee",
+            "username": "haryauyee",
+            "database": "binargold"
+        },
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "SQLite Binar",
+            "database": "${workspaceFolder:Gold}/challenge.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
