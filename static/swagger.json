@@ -221,21 +221,6 @@
                         }
                     }
                 ],
-                "requestBody":{
-                    "required": true,
-                    "content": {
-                        "multipart/form-data":{
-                            "schema":{
-                                "type": "object",
-                                "properties": {
-                                    "text":{
-                                        "type": "string"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200":{
                         "description": "Success"
