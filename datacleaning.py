@@ -9,7 +9,7 @@ import json
 import mysql.connector
 import sqlite3
 
-db = sqlite3.connect('challenge.db')
+db = sqlite3.connect('challenge.db', check_same_thread=False)
 db.text_factory = bytes
 mycursor = db.cursor()
 q_kamusalay = "select * from kamusalay"
@@ -35,12 +35,10 @@ def normalize_alay(text):
     for word in alay_dict_map:
         return ' '.join([alay_dict_map[word] if word in alay_dict_map else word for word in text.split(' ')]) #Pelajari lagi masih bingung
 
-
 '''    if word in alay_dict_map:
         alay_dict_map[word]
     else:
         word for word in text.split(' '):'''
-
 
 def preprocess(text):
     text = lowercase(text) # 1
@@ -51,30 +49,26 @@ def preprocess(text):
 
 
 
-
-
-
-
-def process_csv(input_csv):
+def process_csv_old(input_csv):
 
     try:
         t_input = pd.read_csv(input_csv, encoding='iso-8859-1')
+
     except:
         print("Trying another Encoding")
+        try:
+            t_input = pd.read_csv(input_csv, encoding='utf-8')
+        except:
+            print("CSV File is unreadable")
 
     try:
-        t_input = pd.read_csv(input_csv, encoding='utf-8')
-    except:
-        print("CSV File is unreadable")
 
-    try:
-
-        first_column = t_input.iloc[:100, 0] #Nanti kalau launching 100 nya dihilangkan
+        first_column = t_input.iloc[:, 0] #Nanti kalau launching 100 nya dihilangkan
         print(first_column)
 
         for tweet in first_column:
             tweet_clean = preprocess(tweet)
-            query_tabel = "insert into tweet (tweet_mentah,tweet_clean) values (?, ?)"
+            query_tabel = "insert into tweet (tweet_kotor,tweet_bersih) values (?, ?)"
             val = (tweet, tweet_clean)
             mycursor.execute(query_tabel, val)
             db.commit()
@@ -82,19 +76,26 @@ def process_csv(input_csv):
     except:
         print("CSV File is unreadable")
 
+def process_csv(input_file):
+    first_column = input_file.iloc[:, 0] #Nanti kalau launching 100 nya dihilangkan
+    print(first_column)
+
+    for tweet in first_column:
+        tweet_clean = preprocess(tweet)
+        query_tabel = "insert into tweet (tweet_kotor,tweet_bersih) values (?, ?)"
+        val = (tweet, tweet_clean)
+        mycursor.execute(query_tabel, val)
+        db.commit()
+        print(tweet)
+
 
 
 def process_text(input_text):
     try: 
         output_text = preprocess(input_text)
+        return output_text
 
-        print(input_text)
-        print(output_text)
 
-        query_text = "insert into tweet (tweet_mentah,tweet_clean) values (?, ?)"
-        val = (input_text, output_text)
-        mycursor.execute(query_text, val)
-        db.commit()
     except:
         print("Text is unreadable")
 
@@ -103,8 +104,7 @@ def process_text(input_text):
 #input_text = "CONTOH Alay Bangsat Kasar User HTTPS://www.Facebook.com Adek hahaha 3x bangsat,,,..,.,.!!!@@@ aww" #Nanti Input text masuk sini, ini sementara
 #process_csv(input_csv)
 #process_text(input_text)
-
-
+#print(type(input_csv))
 
 
 

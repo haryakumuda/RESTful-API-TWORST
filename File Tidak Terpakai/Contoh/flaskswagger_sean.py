@@ -10,17 +10,6 @@ from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 from routes import request_api
 
-from flask import Flask, request, redirect, url_for, render_template, jsonify, make_response, send_from_directory
-from flask_cors import CORS
-import os
-from flask_restful import Api, Resource, reqparse
-from datacleaning import preprocess
-from apispec import APISpec
-import flask_swagger_ui
-from flask_swagger_ui import get_swaggerui_blueprint
-import argparse
-
-
 app = Flask(__name__)
 APP = Flask(__name__)
 
@@ -44,41 +33,42 @@ APP.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 
 
-
+"""
 ### Ini apa belum tau ###
 APP.register_blueprint(request_api.get_blueprint())
 
 @APP.errorhandler(400)
 def handle_400_error(_error):
-    """Return a http 400 error to client"""
+    "Return a http 400 error to client"
     return make_response(jsonify({'error': 'Misunderstood'}), 400)
 
 
 @APP.errorhandler(401)
 def handle_401_error(_error):
-    """Return a http 401 error to client"""
+    "Return a http 401 error to client"
     return make_response(jsonify({'error': 'Unauthorised'}), 401)
 
 @APP.errorhandler(404)
 def handle_404_error(_error):
-    """Return a http 404 error to client"""
+    "Return a http 404 error to client"
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 @APP.errorhandler(500)
 def handle_500_error(_error):
-    """Return a http 500 error to client"""
+    "Return a http 500 error to client"
     return make_response(jsonify({'error': 'Server error'}), 500)
 ### end dari ketidaktahuan ###
 
-
+"""
 
 
 
 
 ### Untuk Run Flask APInya ###
 if __name__ == '__main__':
+    app.run(debug=True)
 
-    
+
     PARSER = argparse.ArgumentParser(
         description="Seans-Python-Flask-REST-Boilerplate")
    
