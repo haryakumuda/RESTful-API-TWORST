@@ -1,14 +1,17 @@
-from flask import Flask, request, jsonify, make_response
 import sqlite3
+import pandas as pd
+from flask import Flask, request, jsonify, make_response
 from datacleaning import process_csv, process_text
 from flask_swagger_ui import get_swaggerui_blueprint
-import pandas as pd
-
 
 # Init app
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False  #Agar Return JSON dalam urutan yang benar
 
+# Database
+db = sqlite3.connect('challenge.db', check_same_thread=False) 
+db.row_factory = sqlite3.Row
+mycursor = db.cursor()
 
 # flask swagger configs
 SWAGGER_URL = '/swagger'
@@ -23,17 +26,11 @@ SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
 app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 
-# Database
-db = sqlite3.connect('challenge.db', check_same_thread=False) #check_same_thread=False agar tidak error saat commit, Your cursor 'c' is not created in the same thread; it was probably initialized when the Flask app was run.
-#db.text_factory = bytes #ganti bytes kalau ada error
-db.row_factory = sqlite3.Row
-mycursor = db.cursor()
-
-
 # Homepage
 @app.route('/', methods=['GET'])
 def get():
     return "Welcome to Tworst!"
+
 
 # Tweet
 @app.route("/tweet", methods=["GET","POST"])
@@ -67,9 +64,10 @@ def tweet():
 @app.route("/tweet/<string:tweet_id>", methods=["GET","PUT","DELETE"])
 def tweet_id(tweet_id):
     if request.method == "GET":   
+        
         query_text = "select * from tweet where tweet_id = ?"
-        val = tweet_id
-        select_tweet = mycursor.execute(query_text, val)
+        val = str(tweet_id)
+        select_tweet = mycursor.execute(query_text, [val])
         tweet = [
             dict(tweet_id=row[0], tweet_kotor=row[1], tweet_bersih=row[2])
             for row in select_tweet.fetchall()
@@ -82,7 +80,7 @@ def tweet_id(tweet_id):
 
         query_text = "delete from tweet where tweet_id = ?"
         val = tweet_id
-        mycursor.execute(query_text, val)
+        mycursor.execute(query_text, [val])
         db.commit()
         return "Success Delete Data"
 
@@ -142,7 +140,7 @@ def handle_500_error(_error):
 #Run Server
 if __name__ == '__main__':
     app.run(debug=True)
-
+# Default IP 127.0.0.1 Port 5000
 
 
 
